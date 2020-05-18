@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: kafka-binder-demo
+  cloud:
+    stream:
+      kafka:
+        streams:
+          binder:
+            configuration:
+              default:
+                key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+              commit.interval.ms: 1000
+              #schema.registry.url: if using schema registry
+            functions:
+              process:
+                applicationId: demo-groupId
+            deserialization-exception-handler: logAndContinue
+        binder:
+          brokers: localhost:9092
+      bindings:
+        process-in-0:
+          destination: names-topic
+          startOffset: latest
+          consumer:
+            keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            max.poll.records: 50
+            max.poll.interval.ms: 300000
+
+        process-out-0:
+          destination: uppercase-names
+          producer:
+            keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+
+server:
+  port: 60002
