@@ -1,6 +1,6 @@
 spring:
   application:
-    name: kafka-binder-demo
+    name: kafka-binder
   cloud:
     stream:
       kafka:
@@ -11,28 +11,80 @@ spring:
                 key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
                 value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
               commit.interval.ms: 1000
-              #schema.registry.url: if using schema registry
+              schema.registry.url: http://localhost:8081
             functions:
+              processSingleInput:
+                applicationId: single-kafka-binder
               process:
-                applicationId: demo-groupId
-            deserialization-exception-handler: logAndContinue
+                applicationId: multi-kafka-binder
+            deserialization-exception-handler: logandfail
+
+          bindings:
+            process-in-0:
+              consumer:
+                max.poll.records: 50
+                max.poll.interval.ms: 300000
+                enableDlq: true
+                dlqName: go-die
+            processSingleInput-in-0:
+              consumer:
+                max.poll.records: 50
+                max.poll.interval.ms: 300000
+                enableDlq: true
+                dlqName: go-die
+
+
+
         binder:
           brokers: localhost:9092
+          producer-properties:
+            retries: 3
+
       bindings:
-        process-in-0:
-          destination: names-topic
+        processSingleInput-in-0:
+          destination: simple-name
           startOffset: latest
           consumer:
             keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
             valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
             max.poll.records: 50
             max.poll.interval.ms: 300000
-
+            enableDlq: true
+            dlqName: go-die
+        process-in-0:
+          destination: stage-log
+          startOffset: latest
+          consumer:
+            keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            max.poll.records: 50
+            max.poll.interval.ms: 300000
+            enableDlq: true
+            dlqName: go-die
         process-out-0:
-          destination: uppercase-names
+          destination: catentry
           producer:
             keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
             valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            enableDlq: true
+            dlqName: go-die
+        process-out-1:
+          destination: category
+          producer:
+            keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            enableDlq: true
+            dlqName: go-die
+        process-out-2:
+          destination: price
+          producer:
+            keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            enableDlq: true
+            dlqName: go-die
+      function:
+        definition: processSingleInput,process
+
 
 server:
-  port: 60002
+  port: 60009
