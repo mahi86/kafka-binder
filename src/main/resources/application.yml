@@ -51,6 +51,16 @@ spring:
             max.poll.interval.ms: 300000
             enableDlq: true
             dlqName: go-die
+        processSingleInput-out-0:
+          destination: simple-name-upper
+          startOffset: latest
+          consumer:
+            keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            valueSerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+            max.poll.records: 50
+            max.poll.interval.ms: 300000
+            enableDlq: true
+            dlqName: go-die
         process-in-0:
           destination: stage-log
           startOffset: latest
@@ -83,7 +93,7 @@ spring:
             enableDlq: true
             dlqName: go-die
       function:
-        definition: processSingleInput,process
+        definition: processSingleInput;process
 
 
 server:
